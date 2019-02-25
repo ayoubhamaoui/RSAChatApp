@@ -6,6 +6,21 @@ import socket
 import time
 import pickle
 import random
+import math
+
+
+
+def modexpo(a, n, m):
+    if n == 0:
+        return 1
+    if n % 2 == 0:
+        res = modexpo(a, n / 2, m)
+        return (res % m * res % m) % m
+    else:
+        res = modexpo(a, n / 2, m)
+        return a * res * res % m
+
+
 
 check = True
 
@@ -36,11 +51,7 @@ def modInverse(a, m) :
 
 #gcd function
 def gcd(a,b):
-  if(b==0):
-    return a
-  else:
-    r=a%b
-    return gcd(b,r)
+    return math.gcd(b,a)
 
 #function to check if number is prime
 def is_prime(x):
@@ -73,10 +84,11 @@ n=p*q
 fn = (p-1)*(q-1)
 
 #select integer e / gcd(fn,e)=1, 1 < e < fn
-while(True):
- e = random.randint(2,fn-1)
+e=2
+while(e<n):
  if(gcd(fn,e) == 1):
    break
+ e = e+1
 
 
 #calculate d / d*e = 1 mod(fn)
@@ -111,15 +123,25 @@ time.sleep(1)
 soc.connect((server_host, port))
 print("Connected...\n")
 soc.send(name.encode())
-time.sleep(5)
+time.sleep(3)
 soc.send(str(n).encode())
-time.sleep(5)
+time.sleep(3)
 soc.send(str(e).encode())
-print("e: "+str(e)+" n: "+str(n))
-print("d: "+str(d)+" n: "+str(n))
+print('CLIENT:')
+print("e: "+str(e)+" n: "+str(n)+" d: "+str(d))
 
 server_name = soc.recv(1024)
 server_name = server_name.decode()
+
+n_server = soc.recv(1024)
+e_server = soc.recv(1024)
+
+n_server = int(n_server.decode())
+e_server = int(e_server.decode())
+print("##############################################")
+print('SERVER:')
+print(server_name+":  e="+str(e_server)+" n="+str(n_server))
+print("##############################################")
 print('{} has joined...'.format(server_name))
 print('Enter [bye] to exit.')
 while True:
@@ -134,15 +156,27 @@ while True:
    #message = message.decode()
    dataD=[]
    for i in range(len(data)):
+      #dataD.append(chr(modexpo(data[i],d,n)))
       dataD.append(chr((data[i]**d)%n))
 
    #print(data)
    string = ''.join(dataD)
    print(string)
-   #message = input(str("Me > "))
-   #if message == "[bye]":
-      #message = "Leaving the Chat room"
-      #soc.send(message.encode())
-      #print("\n")
-      #break
+   message = input(str("Me > "))
+   if message == "[bye]":
+      message = "Leaving the Chat room"
+      soc.send(message.encode())
+      print("\n")
+      break
+
+   dataE=[]
+   for i in range(0,len(message)):
+        #C = modexpo(ord(message[i]), e_server, n_server)
+        C=(ord(message[i])**e_server)%n_server
+        dataE.append(C)
+   print(dataE)
+   dataS=pickle.dumps(dataE)
+   soc.send(dataS)
+
+      
    #soc.send(message.encode())
