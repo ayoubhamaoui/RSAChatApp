@@ -1,6 +1,6 @@
 import time, socket, sys
 import pickle
-
+import database
 
 ################################################
 import socket                                         
@@ -11,10 +11,14 @@ import math
 
 check = True
 
+db = "C:\\Users\dell\Desktop\Projects\Cryptographie\RSAChatApp\RSA.db"
+
+conn = database.create_connection(db)
+
 
 def modexpo(a, n, m):
     if n == 0:
-        return 1;
+        return 1
     if n % 2 == 0:
         res = modexpo(a, n / 2, m)
         return (res % m * res % m) % m
@@ -121,7 +125,7 @@ soc = socket.socket()
 host_name = socket.gethostname()
 ip = socket.gethostbyname(host_name)
 port = 1234
-soc.bind((host_name, port))
+soc.bind(("192.168.137.244", port))
 print(host_name, '({})'.format(ip))
 name = input('Enter name: ')
 soc.listen(1) #Try to locate using socket
@@ -152,6 +156,10 @@ time.sleep(3)
 connection.send(str(n).encode())
 time.sleep(3)
 connection.send(str(e).encode())
+
+#save in databases
+with conn:
+    database.insert(conn,name,e,d,n)
 while True:
    message = input('Me > ')
    if message == '[bye]':
